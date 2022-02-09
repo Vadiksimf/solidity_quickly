@@ -13,6 +13,11 @@ contract moneyTransactions {
         // This the instance of the smart contract
         return address(this).balance;
     }
+    
+    // Get address balance
+    function getBalance(address _address) public view returns(uint) {
+        return address(_address).balance;
+    }
 
     function withdrawMoney() public {
         address payable to = payable(msg.sender);
