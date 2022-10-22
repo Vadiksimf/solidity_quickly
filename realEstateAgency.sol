@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.6;
+pragma solidity ^0.7.0;
 
 /*
 Requirements:
@@ -37,6 +37,13 @@ contract Agency {
         newNewRealEstate.valid = true;
     }
 
+    receive() external payable {}
+    fallback() external payable {}
+
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+
     struct RealEstateModel {
         address owner;
         string location;
@@ -54,7 +61,7 @@ contract Agency {
     struct OnSaleModel {
         uint256 estateId;
         address seller;
-        uint price;
+        uint256 price;
         bool isSold;
     }
 
@@ -181,10 +188,6 @@ contract Agency {
         newOnSaleAd.isSold = false;
     }
 
-    event Deposit(address sender, uint amount);
-    event Withdrawal(address receiver, uint amount);
-    event Transfer(address sender, address receiver, uint amount);
-
     function buyRealEstate (uint256 estateId) public payable {
         OnSaleModel storage onSaleEstate = onSaleAds[estateId];
         RealEstateModel storage estate = realEstate[estateId];
@@ -194,11 +197,10 @@ contract Agency {
         require(msg.value != onSaleEstate.price, "Wrong amount of money");
 
         require(address(msg.sender).balance >= onSaleEstate.price, "Insufficient funds");
-        // emit Transfer(msg.sender, onSaleEstate.seller, onSaleEstate.price);
 
-        address payable seller = payable(onSaleEstate.seller);
-        (bool success, ) = seller.call{value: onSaleEstate.price}("");
+        (bool success, ) = onSaleAds[estateId].seller.call{value: onSaleAds[estateId].price}("");
         require(success, "Transfer failed");
+        // payable(onSaleEstate.seller).transfer(onSaleEstate.price);
 
         estate.owner = msg.sender;
         onSaleEstate.isSold = true;
